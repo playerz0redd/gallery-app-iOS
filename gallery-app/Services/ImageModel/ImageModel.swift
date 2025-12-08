@@ -6,3 +6,43 @@
 //
 
 import Foundation
+
+struct ImageModel: Decodable {
+    let id: String
+    let width: Int
+    let height: Int
+    let createdDate: Date
+    let description: String?
+    let altDescription: String?
+    let photoUrls: PhotoUrls
+    let likes: Int
+    let user: User
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case width
+        case height
+        case createdDate = "created_at"
+        case description
+        case altDescription = "alt_description"
+        case photoUrls = "urls"
+        case likes = "likes"
+        case user = "user"
+    }
+}
+
+struct PhotoUrls: Decodable {
+    let raw: String
+    let regular: String
+    let thumb: String
+}
+
+struct User: Decodable {
+    let username: String?
+    let instagramUsername: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case username
+        case instagramUsername = "instagram_username"
+    }
+}
