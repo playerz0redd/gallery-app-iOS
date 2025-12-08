@@ -19,7 +19,7 @@
 		FC544E2D2EE77C3B00CDA9BD /* Exceptions for "gallery-app" folder in "gallery-app" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Application/Info.plist,
 			);
 			target = FC544E172EE77C3900CDA9BD /* gallery-app */;
 		};
