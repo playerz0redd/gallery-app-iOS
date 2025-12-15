@@ -49,5 +49,21 @@ final class GalleryPhotoDetailsViewController: UIViewController {
     
 }
 
+extension GalleryPhotoDetailsViewController {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        willDisplay cell: UICollectionViewCell,
+        forItemAt indexPath: IndexPath
+    ) {
+        if indexPath.item == viewModel.photoModels.count - 5 {
+            viewModel.changePhotoPage(to: viewModel.getNextPage(photoIndex: indexPath.item))
+            viewModel.fetchPhotoModelPage()
+        }
+    }
+}
 
-
+extension GalleryPhotoDetailsViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        collectionView.frame.size
+    }
+}
