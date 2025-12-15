@@ -32,14 +32,12 @@ class GalleryViewController: UIViewController {
     }()
 
     override func viewDidLoad() {
-        Task { @MainActor in
-            super.viewDidLoad()
-            bindViewModel()
-            bindErrorAction()
-            viewModel.fetchPhotoModelPage()
-            view.backgroundColor = .systemBackground
-            setupCollectionView()
-        }
+        super.viewDidLoad()
+        bindViewModel()
+        bindErrorAction()
+        viewModel.fetchPhotoModelPage()
+        view.backgroundColor = .systemBackground
+        setupCollectionView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
