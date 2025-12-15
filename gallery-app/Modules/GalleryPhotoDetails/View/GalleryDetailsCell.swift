@@ -53,5 +53,71 @@ final class GalleryDetailsCell: GalleryCell {
     required init?(coder: NSCoder) {
         fatalError()
     }
+    
+    private func configureLabel(label: UILabel, text: String?, font: UIFont) {
+        label.text = text
+        label.textColor = .black
+        label.font = font
+    }
+    
+    private func configureButton() {
+        if let isLiked = self.isLiked {
+            likeButton.contentHorizontalAlignment = .center
+            likeButton.contentVerticalAlignment = .center
+            let config = UIImage.SymbolConfiguration(pointSize: 50, weight: .medium, scale: .default)
+            let image = UIImage(systemName: isLiked ? "heart.fill" : "heart", withConfiguration: config)
+            likeButton.contentHorizontalAlignment = .center
+            likeButton.contentVerticalAlignment = .center
+            likeButton.imageView?.contentMode = .scaleAspectFit
+            likeButton.setImage(image, for: .normal)
+            likeButton.tintColor = isLiked ? .red : .black
+            likeButton.addTarget(self, action: #selector(likeAction), for: .touchUpInside)
+        }
+    }
+    
+    @objc private func likeAction() {
+        self.onLike?()
+        
+        UIView.animate(withDuration: 0.1, animations: {
+            self.likeButton.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.likeButton.transform = .identity
+            }
+        }
+    }
+    
+    func configureCell(
+        with imageUrl: String,
+        username: String?,
+        likeAmount: Int?,
+        description: String?,
+        isLiked: Bool,
+        photoService: PhotoService,
+        onLike: @escaping () -> Void
+    ) {
+        self.imageUrl = imageUrl
+        self.isLiked = isLiked
+        self.onLike = onLike
+        configureButton()
+        
+        configureLabel(
+            label: usernameLabel,
+            text: "@\(username ?? "No username")",
+            font: UIFont.systemFont(ofSize: 16, weight: .bold)
+        )
+        configureLabel(
+            label: descriptionLabel,
+            text: description ?? "No description",
+            font: UIFont.systemFont(ofSize: 14, weight: .medium)
+        )
+        configureLabel(
+            label: likesLabel,
+            text: "\(likeAmount ?? 0)",
+            font: UIFont.systemFont(ofSize: 14, weight: .bold)
+        )
+        
+        super.configureCell(with: imageUrl, photoService: photoService)
+    }
 
 }
