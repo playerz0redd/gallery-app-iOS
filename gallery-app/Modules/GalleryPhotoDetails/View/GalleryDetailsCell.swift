@@ -119,5 +119,15 @@ final class GalleryDetailsCell: GalleryCell {
         
         super.configureCell(with: imageUrl, photoService: photoService)
     }
+    
+    override func setupLayout() {
+        contentView.addSubview(imageView)
+        contentView.addSubview(usernameLabel)
+        contentView.addSubview(likesLabel)
+        contentView.addSubview(descriptionLabel)
+        contentView.addSubview(likeButton)
+        contentView.backgroundColor = .systemBackground
+    }
+    
 
 }
