@@ -9,14 +9,15 @@ import Foundation
 
 struct ImageModel: Decodable {
     let id: String
-    let width: Int
-    let height: Int
-    let createdDate: Date
+    let width: Int?
+    let height: Int?
+    let createdDate: Date?
     let description: String?
     let altDescription: String?
     let photoUrls: PhotoUrls
-    let likes: Int
+    var likes: Int
     let user: User
+    var isLiked: Bool?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -32,7 +33,7 @@ struct ImageModel: Decodable {
 }
 
 struct PhotoUrls: Decodable {
-    let raw: String
+    let raw: String?
     let regular: String
     let thumb: String
 }
@@ -45,4 +46,10 @@ struct User: Decodable {
         case username
         case instagramUsername = "instagram_username"
     }
+}
+
+enum PhotoQuality {
+    case raw
+    case regular
+    case thumb
 }
