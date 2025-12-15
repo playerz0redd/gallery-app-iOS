@@ -17,11 +17,13 @@ class GalleryViewModel {
     
     var photoModels: [ImageModel]
     var onDataFetch: (([IndexPath]) -> Void)?
+    var onError: ((String) -> Void)?
     
     init(photoService: PhotoService, photoModels: [ImageModel] = []) {
         self.photoService = photoService
         self.photoModels = photoModels
     }
+    
     
     func getPhotoService() -> PhotoService {
         self.photoService
@@ -41,7 +43,7 @@ class GalleryViewModel {
                 let indexPath = (startIndex..<endIndex).map { IndexPath(row: $0, section: 0)}
                 self.onDataFetch?(indexPath)
             } catch let error as AppError {
-                print(error.description)
+                self.onError?(error.description)
             }
             isLoading.toggle()
         }
@@ -70,7 +72,7 @@ class GalleryViewModel {
             do {
                 try await photoService.fetchPhotosPage(for: endpoints)
             } catch let error as AppError {
-                print(error.description)
+                self.onError?(error.description)
             }
         }
     }
@@ -79,7 +81,7 @@ class GalleryViewModel {
         do {
             try photoService.deletePhoto(id: id)
         } catch let error {
-            print(error.description)
+            self.onError?(error.description)
         }
     }
     
@@ -87,7 +89,7 @@ class GalleryViewModel {
         do {
             try photoService.savePhotoModel(model: model)
         } catch let error {
-            print(error.description)
+            self.onError?(error.description)
         }
     }
     
