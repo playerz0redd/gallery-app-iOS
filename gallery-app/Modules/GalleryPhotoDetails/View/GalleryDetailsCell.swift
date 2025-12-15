@@ -127,7 +127,32 @@ final class GalleryDetailsCell: GalleryCell {
         contentView.addSubview(descriptionLabel)
         contentView.addSubview(likeButton)
         contentView.backgroundColor = .systemBackground
+        setupConstraints()
     }
     
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -60),
+            imageView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
+            
+            usernameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            usernameLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -60),
+            usernameLabel.bottomAnchor.constraint(equalTo: descriptionLabel.topAnchor, constant: -5),
+            
+            likeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            likeButton.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: -25),
+            likeButton.heightAnchor.constraint(equalToConstant: 30),
+            likeButton.widthAnchor.constraint(equalToConstant: 30),
+            
+            likesLabel.topAnchor.constraint(equalTo: likeButton.bottomAnchor, constant: 3),
+            likesLabel.centerXAnchor.constraint(equalTo: likeButton.centerXAnchor),
+            
+            descriptionLabel.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor, constant: -25),
+            descriptionLabel.leadingAnchor.constraint(equalTo: usernameLabel.leadingAnchor),
+            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -60),
+        ])
+    }
 
 }
