@@ -17,10 +17,15 @@ protocol IDataPersistance {
     func isPhotoLiked(id: String) throws(DatabaseError) -> Bool
 }
 
+protocol IDataProvider {
+    func fetchData(endpoint: APIEndpoints) async throws(AppError) -> Data
+}
+
 final class PhotoService {
 
     private let modelProvider: IModelProvider
     private let persistanceManager: IDataPersistance
+    private let dataProvider: IDataProvider
     
     init(
         dataProvider: IDataProvider,
