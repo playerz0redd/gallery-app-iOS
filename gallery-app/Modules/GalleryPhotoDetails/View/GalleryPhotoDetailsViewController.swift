@@ -67,3 +67,40 @@ extension GalleryPhotoDetailsViewController: UICollectionViewDelegateFlowLayout 
         collectionView.frame.size
     }
 }
+
+extension GalleryPhotoDetailsViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        viewModel.photoModels.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: GalleryDetailsCell.reuseId,
+            for: indexPath
+        ) as? GalleryDetailsCell else {
+            return .init()
+        }
+        let model = viewModel.photoModels[indexPath.item]
+        cell.configureCell(
+            with: viewModel.photoModels[indexPath.item].photoUrls.regular,
+            username: viewModel.photoModels[indexPath.item].user.instagramUsername,
+            likeAmount: viewModel.photoModels[indexPath.item].likes, description:
+            viewModel.photoModels[indexPath.item].description,
+            isLiked: model.isLiked ?? false, photoService: viewModel.getPhotoService()) { [weak self] in
+            guard let self = self else { return }
+            
+            self.viewModel.changeButtonState(at: indexPath.item)
+            
+            self.collectionView.reloadItems(at: [indexPath])
+            
+        }
+        return cell
+    }
+    
+    
+}
+
+
+
+
+
