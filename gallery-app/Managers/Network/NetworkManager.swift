@@ -16,7 +16,7 @@ final class NetworkManager: IModelProvider, IDataProvider {
     
     
     func fetchData(endpoint: APIEndpoints) async throws(AppError) -> Data {
-        guard let url = URL(string: endpoint.stringValue) else { return .init() }
+        guard let url = URL(string: endpoint.stringValue) else { throw .photoModelError }
         var request = URLRequest(url: url)
         request.timeoutInterval = 5
         do {
