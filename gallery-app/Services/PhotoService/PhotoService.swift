@@ -11,10 +11,16 @@ protocol IModelProvider {
     func fetchPhotosModels(page: Int) async throws(AppError) -> [ImageModel]
 }
 
+protocol IDataPersistance {
+    func savePhotoModel(model: DatabasePhotoModel) throws(DatabaseError)
+    func deletePhoto(id: String) throws(DatabaseError)
+    func isPhotoLiked(id: String) throws(DatabaseError) -> Bool
+}
+
 final class PhotoService {
 
     private let modelProvider: IModelProvider
-    
+    private let persistanceManager: IDataPersistance
     
     init(
         dataProvider: IDataProvider,
