@@ -61,6 +61,10 @@ final class GalleryPhotoDetailsViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        scrollToStartCell()
+    }
+    
+    private func scrollToStartCell() {
         if isFirstLayout {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
