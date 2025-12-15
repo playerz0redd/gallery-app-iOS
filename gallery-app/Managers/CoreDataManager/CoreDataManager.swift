@@ -7,7 +7,7 @@
 
 import CoreData
 
-final class CoreDataManager {
+final class CoreDataManager: IModelProvider, IDataPersistance {
     
     static let shared = CoreDataManager()
     
