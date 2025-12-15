@@ -7,32 +7,84 @@
 
 import UIKit
 
+protocol IModelProvider {
+    func fetchPhotosModels(page: Int) async throws(AppError) -> [ImageModel]
+}
+
 final class PhotoService {
-    private let networkManager: NetworkManager
+
+    private let modelProvider: IModelProvider
     
-    init(networkManager: NetworkManager) {
-        self.networkManager = networkManager
+    
+    init(
+        dataProvider: IDataProvider,
+        modelProvider: IModelProvider,
+        persistanceManager: IDataPersistance
+    ) {
+        self.dataProvider = dataProvider
+        self.modelProvider = modelProvider
+        self.persistanceManager = persistanceManager
     }
     
-    func fetchPhotosPage(for endpoints: [APIEndpoints]) async -> [UIImage] {
-        return await withTaskGroup(of: UIImage.self, returning: [UIImage].self) { group in
-            var photos: [UIImage] = []
-            for endpoint in endpoints {
-                group.addTask {
-                    return try! await self.fetchPhoto(for: endpoint)
+    func fetchPhotosModels(page: Int) async throws(AppError) -> [ImageModel] {
+        var photos = try await modelProvider.fetchPhotosModels(page: page)
+        for index in 0..<photos.count {
+            do {
+                if try persistanceManager.isPhotoLiked(id: photos[index].id) {
+                    photos[index].isLiked = true
+                    photos[index].likes += 1
+                }
+            } catch let error {
+                throw .databaseError(error)
+            }
+        }
+        return photos
+    }
+    
+    func fetchPhotosPage(for endpoints: [APIEndpoints]) async throws(AppError) {
+        do {
+            try await withThrowingTaskGroup { group in
+                for endpoint in endpoints {
+                    group.addTask {
+                        return try await (endpoint.stringValue, self.fetchPhoto(for: endpoint))
+                    }
+                }
+                
+                for try await (id, photo) in group {
+                    CachingManager.shared.cachePhoto(id: id as NSString, image: photo)
                 }
             }
-            
-            for await photo in group {
-                photos.append(photo)
-            }
-            return photos
+        } catch let error as AppError {
+            throw error
+        } catch let error {
+            throw .unknownError(error)
         }
     }
     
-    private func fetchPhoto(for endpoint: APIEndpoints) async throws -> UIImage {
-        let imageData = try await networkManager.fetchData(endpoint: endpoint)
+    func fetchPhoto(for endpoint: APIEndpoints) async throws(AppError) -> UIImage {
+        if let image = CachingManager.shared.getPhoto(by: endpoint.stringValue as NSString) {
+            return image
+        }
+        let imageData = try await dataProvider.fetchData(endpoint: endpoint)
         guard let image = UIImage(data: imageData) else { return UIImage() }
+        CachingManager.shared.cachePhoto(id: endpoint.stringValue as NSString, image: image)
         return image
     }
+    
+    func savePhotoModel(model: DatabasePhotoModel) throws(AppError) {
+        do {
+            try persistanceManager.savePhotoModel(model: model)
+        } catch let error {
+            throw .databaseError(error)
+        }
+    }
+    
+    func deletePhoto(id: String) throws(AppError) {
+        do {
+            try persistanceManager.deletePhoto(id: id)
+        } catch let error {
+            throw .databaseError(error)
+        }
+    }
+    
 }
