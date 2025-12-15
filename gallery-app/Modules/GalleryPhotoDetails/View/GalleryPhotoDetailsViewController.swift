@@ -43,7 +43,45 @@ final class GalleryPhotoDetailsViewController: UIViewController {
         bindViewModel()
         view.backgroundColor = .systemBackground
         view.addSubview(collectionView)
-        
+        setupConstraints()
+    }
+    
+    func setupConstraints() {
+        NSLayoutConstraint.activate([
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if isFirstLayout {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if self.currentImageIndex < self.viewModel.photoModels.count {
+                    collectionView.isPagingEnabled = false
+                    let indexPath = IndexPath(item: self.currentImageIndex, section: 0)
+                    self.collectionView.scrollToItem(
+                        at: indexPath,
+                        at: .centeredHorizontally,
+                        animated: false
+                    )
+                    collectionView.isPagingEnabled = true
+
+                }
+            }
+        }
+        isFirstLayout = false
+    }
+
+    func bindViewModel() {
+        viewModel.onDataFetch = { [weak self] newIndexPaths in
+            self?.collectionView.performBatchUpdates({
+                self?.collectionView.insertItems(at: newIndexPaths)
+            }, completion: nil)
+        }
     }
     
     
