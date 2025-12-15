@@ -36,6 +36,7 @@ class GalleryViewController: UIViewController {
             super.viewDidLoad()
             self.navigationItem.title = "Gallery"
             bindViewModel()
+            bindErrorAction()
             viewModel.fetchPhotoModelPage()
             view.backgroundColor = .systemBackground
             setupCollectionView()
@@ -50,7 +51,13 @@ class GalleryViewController: UIViewController {
         collection.reloadData()
     }
     
-    func bindViewModel() {
+    private func bindErrorAction() {
+        viewModel.onError = { [weak self] errorMessage in
+            self?.showAler(title: "An error occured :(", message: errorMessage)
+        }
+    }
+    
+    private func bindViewModel() {
         viewModel.onDataFetch = { [weak self] newIndexPaths in
             
             if let first = newIndexPaths.first, first.item == 0 {

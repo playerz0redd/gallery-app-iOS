@@ -30,7 +30,10 @@ final class GalleryPhotoDetailsViewController: UIViewController {
         let collection: UICollectionView = .init(frame: .zero, collectionViewLayout: layout)
         collection.dataSource = self
         collection.delegate = self
-        collection.register(GalleryDetailsCell.self, forCellWithReuseIdentifier: GalleryDetailsCell.reuseId)
+        collection.register(
+            GalleryDetailsCell.self,
+            forCellWithReuseIdentifier: GalleryDetailsCell.reuseId
+        )
         collection.translatesAutoresizingMaskIntoConstraints = false
         collection.isPagingEnabled = true
         collection.showsHorizontalScrollIndicator = false
@@ -41,6 +44,7 @@ final class GalleryPhotoDetailsViewController: UIViewController {
         super.viewDidLoad()
         self.navigationItem.title = "Details"
         bindViewModel()
+        bindErrorAction()
         view.backgroundColor = .systemBackground
         view.addSubview(collectionView)
         setupConstraints()
@@ -76,11 +80,17 @@ final class GalleryPhotoDetailsViewController: UIViewController {
         isFirstLayout = false
     }
 
-    func bindViewModel() {
+    private func bindViewModel() {
         viewModel.onDataFetch = { [weak self] newIndexPaths in
             self?.collectionView.performBatchUpdates({
                 self?.collectionView.insertItems(at: newIndexPaths)
             }, completion: nil)
+        }
+    }
+    
+    private func bindErrorAction() {
+        viewModel.onError = { [weak self] errorMessage in
+            self?.showAler(title: "An error occured :(", message: errorMessage)
         }
     }
     
