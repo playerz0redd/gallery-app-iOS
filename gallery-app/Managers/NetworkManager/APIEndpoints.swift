@@ -11,7 +11,7 @@ enum APIEndpoints {
     case imageInfo(page: Int)
     case downloadImage(url: String)
     
-    static let accessToken: String = "9v4f0Itk2mWXa831ATj5ZbIxu1FIyL6Xw0vpv4wJ7mM"
+    private static let accessToken: String = Bundle.main.object(forInfoDictionaryKey: "API_TOKEN") as! String
     static let imagesPerPage = 30
     
     var stringValue: String {
