@@ -34,7 +34,6 @@ class GalleryViewController: UIViewController {
     override func viewDidLoad() {
         Task { @MainActor in
             super.viewDidLoad()
-            self.navigationItem.title = "Gallery"
             bindViewModel()
             bindErrorAction()
             viewModel.fetchPhotoModelPage()
