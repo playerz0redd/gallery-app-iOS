@@ -19,5 +19,8 @@
 			</array>
 		</dict>
 	</dict>
+    
+    <key>API_TOKEN</key>
+    <string>$(API_TOKEN)</string>
 </dict>
 </plist>
