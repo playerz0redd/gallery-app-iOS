@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class NetworkManager: IModelProvider, IDataProvider {
+struct NetworkManager: IModelProvider, IDataProvider {
     
     func fetchPhotosModels(page: Int) async throws(AppError) -> [ImageModel] {
         let data = try await self.fetchData(endpoint: APIEndpoints.imageInfo(page: page))
