@@ -147,6 +147,8 @@
 /* Begin XCBuildConfiguration section */
 		FC544E2F2EE77C3B00CDA9BD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = FC544E1A2EE77C3900CDA9BD /* gallery-app */;
+			baseConfigurationReferenceRelativePath = Application/Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -154,7 +156,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = CJF7D46AQ4;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "gallery-app/Info.plist";
+				INFOPLIST_FILE = "gallery-app/Application/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -179,6 +181,8 @@
 		};
 		FC544E302EE77C3B00CDA9BD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = FC544E1A2EE77C3900CDA9BD /* gallery-app */;
+			baseConfigurationReferenceRelativePath = Application/Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -186,7 +190,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = CJF7D46AQ4;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "gallery-app/Info.plist";
+				INFOPLIST_FILE = "gallery-app/Application/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -211,6 +215,8 @@
 		};
 		FC544E312EE77C3B00CDA9BD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = FC544E1A2EE77C3900CDA9BD /* gallery-app */;
+			baseConfigurationReferenceRelativePath = Application/Secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -275,6 +281,8 @@
 		};
 		FC544E322EE77C3B00CDA9BD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = FC544E1A2EE77C3900CDA9BD /* gallery-app */;
+			baseConfigurationReferenceRelativePath = Application/Secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
