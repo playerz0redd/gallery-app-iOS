@@ -32,6 +32,7 @@ final class GalleryModuleBuilder {
     static func build(
         dataProvider: NetworkManager,
         persistanceProvider: CoreDataManager,
+        cachingManager: IDataCache,
         type: GalleryModuleType
     ) -> GalleryViewController {
         
@@ -39,7 +40,8 @@ final class GalleryModuleBuilder {
         let photoService: PhotoService = .init(
             dataProvider: dataProvider,
             modelProvider: modelProvider,
-            persistanceManager: persistanceProvider
+            persistanceManager: persistanceProvider,
+            cachingManager: cachingManager
         )
         let viewModel = GalleryViewModel(photoService: photoService)
         let viewController = GalleryViewController(viewModel: viewModel)
