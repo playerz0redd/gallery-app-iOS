@@ -7,13 +7,11 @@
 
 import UIKit
 
-final class CachingManager {
-    
-    static let shared = CachingManager()
+final class CachingManager: IDataCache {
     
     private let cache = NSCache<NSString, UIImage>()
     
-    private init() {
+    init() {
         cache.countLimit = 200
     }
     

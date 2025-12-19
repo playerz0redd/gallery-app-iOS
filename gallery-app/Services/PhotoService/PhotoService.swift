@@ -21,20 +21,28 @@ protocol IDataProvider {
     func fetchData(endpoint: APIEndpoints) async throws(AppError) -> Data
 }
 
+protocol IDataCache {
+    func cachePhoto(id: NSString, image: UIImage)
+    func getPhoto(by id: NSString) -> UIImage?
+}
+
 final class PhotoService {
 
     private let modelProvider: IModelProvider
     private let persistanceManager: IDataPersistance
     private let dataProvider: IDataProvider
+    private let cachingManager: IDataCache
     
     init(
         dataProvider: IDataProvider,
         modelProvider: IModelProvider,
-        persistanceManager: IDataPersistance
+        persistanceManager: IDataPersistance,
+        cachingManager: IDataCache
     ) {
         self.dataProvider = dataProvider
         self.modelProvider = modelProvider
         self.persistanceManager = persistanceManager
+        self.cachingManager = cachingManager
     }
     
     func fetchPhotosModels(page: Int) async throws(AppError) -> [ImageModel] {
@@ -62,7 +70,7 @@ final class PhotoService {
                 }
                 
                 for try await (id, photo) in group {
-                    CachingManager.shared.cachePhoto(id: id as NSString, image: photo)
+                    cachingManager.cachePhoto(id: id as NSString, image: photo)
                 }
             }
         } catch let error as AppError {
@@ -73,12 +81,12 @@ final class PhotoService {
     }
     
     func fetchPhoto(for endpoint: APIEndpoints) async throws(AppError) -> UIImage {
-        if let image = CachingManager.shared.getPhoto(by: endpoint.stringValue as NSString) {
+        if let image = cachingManager.getPhoto(by: endpoint.stringValue as NSString) {
             return image
         }
         let imageData = try await dataProvider.fetchData(endpoint: endpoint)
         guard let image = UIImage(data: imageData) else { return UIImage() }
-        CachingManager.shared.cachePhoto(id: endpoint.stringValue as NSString, image: image)
+        cachingManager.cachePhoto(id: endpoint.stringValue as NSString, image: image)
         return image
     }
     

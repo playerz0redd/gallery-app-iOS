@@ -23,16 +23,19 @@ final class MainTabBar: UITabBarController {
         
         let networkManager: NetworkManager = .init()
         let persistanceManager: CoreDataManager = .init()
+        let cachingManager: CachingManager = .init()
         
         let galleryViewController = GalleryModuleBuilder.build(
             dataProvider: networkManager,
             persistanceProvider: persistanceManager,
+            cachingManager: cachingManager,
             type: .gallery
         )
         
         let favoritesViewController = GalleryModuleBuilder.build(
             dataProvider: networkManager,
             persistanceProvider: persistanceManager,
+            cachingManager: cachingManager,
             type: .favorites
         )
         
