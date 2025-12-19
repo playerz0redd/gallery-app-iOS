@@ -9,10 +9,6 @@ import CoreData
 
 final class CoreDataManager: IModelProvider, IDataPersistance {
     
-    static let shared = CoreDataManager()
-    
-    private init() { }
-    
     lazy private var persistanceContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "PhotoEntity")
         container.loadPersistentStores { description, error in

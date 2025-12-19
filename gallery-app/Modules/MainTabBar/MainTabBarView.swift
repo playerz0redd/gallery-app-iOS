@@ -22,7 +22,7 @@ final class MainTabBar: UITabBarController {
     private func setupViewControllers() {
         
         let networkManager: NetworkManager = .init()
-        let persistanceManager: CoreDataManager = .shared
+        let persistanceManager: CoreDataManager = .init()
         
         let galleryViewController = GalleryModuleBuilder.build(
             dataProvider: networkManager,
