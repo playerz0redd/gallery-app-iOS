@@ -17,8 +17,13 @@ class GalleryCell: UICollectionViewCell {
     private var photoService: PhotoService?
     private var imageUrl: String = ""
     
-    lazy var imageView: UIImageView = {
-        setupImageView()
+    private let imageView: UIImageView = {
+        let image = UIImageView()
+        image.contentMode = .scaleAspectFill
+        image.layer.cornerRadius = 10
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.clipsToBounds = true
+        return image
     }()
     
     required init?(coder: NSCoder) {
@@ -35,15 +40,6 @@ class GalleryCell: UICollectionViewCell {
         self.imageView.image = nil
     }
     
-    func setupImageView() -> UIImageView {
-        let image = UIImageView()
-        image.contentMode = .scaleAspectFill
-        image.layer.cornerRadius = 10
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.clipsToBounds = true
-        return image
-    }
-    
     func configureCell(with url: String, photoService: PhotoService) {
         self.imageUrl = url
         self.photoService = photoService
@@ -57,7 +53,7 @@ class GalleryCell: UICollectionViewCell {
     
     }
     
-    func setupLayout() {
+    private func setupLayout() {
         contentView.addSubview(imageView)
         contentView.layer.cornerRadius = 10
         contentView.clipsToBounds = true
