@@ -7,47 +7,47 @@
 
 import UIKit
 
-final class GalleryDetailsCell: GalleryCell {
+final class GalleryDetailsCell: UICollectionViewCell {
     
-    override class var reuseId: String {
-        "detailsCell"
-    }
+    static let reuseId: String = "detailsCell"
+    private var photoService: PhotoService?
     
     private var imageUrl: String?
     private var isLiked: Bool?
     
     private var onLike: (() -> Void)?
     
-    lazy private var likeButton: UIButton = {
+    private let likeButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    lazy private var usernameLabel: UILabel = {
+    private let usernameLabel: UILabel = {
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UILabel())
     
-    lazy private var likesLabel: UILabel = {
+    private let likesLabel: UILabel = {
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UILabel())
     
-    lazy private var descriptionLabel: UILabel = {
+    private let descriptionLabel: UILabel = {
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UILabel())
     
-    override func setupImageView() -> UIImageView {
+    private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
-    }
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupLayout()
     }
     
     required init?(coder: NSCoder) {
@@ -117,10 +117,23 @@ final class GalleryDetailsCell: GalleryCell {
             font: UIFont.systemFont(ofSize: 14, weight: .bold)
         )
         
-        super.configureCell(with: imageUrl, photoService: photoService)
+        configureCell(with: imageUrl, photoService: photoService)
     }
     
-    override func setupLayout() {
+    private func configureCell(with url: String, photoService: PhotoService) {
+        self.imageUrl = url
+        self.photoService = photoService
+        Task { @MainActor in
+            let image = try await photoService.fetchPhoto(for: .downloadImage(url: url))
+            
+            if imageUrl == self.imageUrl {
+                self.imageView.image = image
+            }
+        }
+    
+    }
+    
+    func setupLayout() {
         contentView.addSubview(imageView)
         contentView.addSubview(usernameLabel)
         contentView.addSubview(likesLabel)
