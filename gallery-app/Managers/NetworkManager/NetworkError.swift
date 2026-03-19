@@ -19,9 +19,9 @@ enum NetworkError: Error {
     
     var description: String {
         switch self {
-        case .serverError(let serverError):     "Server error \(serverError)"
-        case .internetError:                    "Internet error"
-        case .decoderError:                     "Data decoder error"
+        case .serverError(let serverError):       "Server error \(serverError)"
+        case .internetError(let error):           "Internet error \(error.localizedDescription)"
+        case .decoderError(let error):            "Data decoder error \(error.localizedDescription)"
         }
     }
     
