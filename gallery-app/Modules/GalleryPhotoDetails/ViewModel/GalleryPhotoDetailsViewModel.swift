@@ -36,7 +36,9 @@ final class GalleryPhotoDetailsViewModel {
         
         guard !isLoading else { return }
         
-        let nextPage = currentIndex / APIEndpoints.imagesPerPage + 2
+        let currentPage = (currentIndex / APIEndpoints.imagesPerPage) + 1
+        let nextPage = currentPage + 1
+        
         isLoading = true
         
         Task { @MainActor in
