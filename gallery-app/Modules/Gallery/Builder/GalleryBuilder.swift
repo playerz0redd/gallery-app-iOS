@@ -44,6 +44,7 @@ final class GalleryModuleBuilder {
             cachingManager: cachingManager
         )
         let viewModel = GalleryViewModel(photoService: photoService)
+        viewModel.isFavorites = (type == .favorites)
         let viewController = GalleryViewController(viewModel: viewModel)
         viewController.navigationItem.title = type.title
         

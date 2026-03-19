@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  GalleryViewController.swift
 //  gallery-app
 //
 //  Created by Pavel Playerz0redd on 9.12.25.
@@ -38,15 +38,22 @@ class GalleryViewController: UIViewController {
         viewModel.fetchPhotoModelPage()
         view.backgroundColor = .systemBackground
         setupCollectionView()
+        
+        if !viewModel.isFavorites {
+            viewModel.fetchPhotoModelPage()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        viewModel.photoModels.removeAll()
-        viewModel.fetchPhotoModelPage()
-        viewModel.changePhotoPage(to: 1)
-        collection.reloadData()
-    }
+            super.viewWillAppear(animated)
+            
+            if viewModel.isFavorites {
+                viewModel.photoModels.removeAll()
+                collection.reloadData()
+                viewModel.changePhotoPage(to: 1)
+                viewModel.fetchPhotoModelPage()
+            }
+        }
     
     private func bindErrorAction() {
         viewModel.onError = { [weak self] errorMessage in
@@ -74,25 +81,27 @@ class GalleryViewController: UIViewController {
             
             collection.leadingAnchor.constraint(
                 equalTo: view.leadingAnchor,
-                constant: GalleryViewController.spacing
+                constant: Constants.spacing
             ),
             
             collection.trailingAnchor.constraint(
                 equalTo: view.trailingAnchor,
-                constant: -GalleryViewController.spacing
+                constant: -Constants.spacing
             ),
+            
             collection.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 }
 
 extension GalleryViewController: UICollectionViewDelegate {
+    
     func collectionView(
         _ collectionView: UICollectionView,
         willDisplay cell: UICollectionViewCell,
         forItemAt indexPath: IndexPath
     ) {
-        if indexPath.item == viewModel.photoModels.count - 20 {
+        if indexPath.item == viewModel.photoModels.count - Constants.prefetchThreshold {
             viewModel.fetchPhotoModelPage()
         }
     }
@@ -119,30 +128,33 @@ extension GalleryViewController: UICollectionViewDelegate {
         guard (0..<self.viewModel.photoModels.count).contains(index) else { return }
         switch action {
         case .like:
-            self.viewModel.photoModels[index].isLiked = true
-            self.viewModel.photoModels[index].likes += 1
+            self.viewModel.updatePhotoLikeState(at: index, isLiked: true)
         case .dislike:
-            self.viewModel.photoModels[index].isLiked = false
-            self.viewModel.photoModels[index].likes -= 1
+            self.viewModel.updatePhotoLikeState(at: index, isLiked: false)
         }
     }
 }
 
 extension GalleryViewController: UICollectionViewDelegateFlowLayout {
     
-    private static let spacing: CGFloat = 10
-    private static let photosPerRow: CGFloat = 3
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let totalSpacing = (GalleryViewController.photosPerRow - 1) * GalleryViewController.spacing
-        let size = floor((collectionView.frame.width - totalSpacing) / GalleryViewController.photosPerRow)
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
+        let totalSpacing = (Constants.photosPerRow - 1) * Constants.spacing
+        let size = floor((collectionView.frame.width - totalSpacing) / Constants.photosPerRow)
         return .init(width: size, height: size)
     }
     
 }
 
 extension GalleryViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
         viewModel.photoModels.count
     }
     
@@ -156,10 +168,21 @@ extension GalleryViewController: UICollectionViewDataSource {
             for: indexPath
         ) as? GalleryCell else { return .init() }
         
-        cell.configureCell(with: viewModel.photoModels[indexPath.item].photoUrls.thumb, photoService: viewModel.getPhotoService())
+        let url = viewModel.photoModels[indexPath.item].photoUrls.thumb
+        cell.configureCell { [weak self] in
+            guard let self = self else { return nil }
+            return try? await self.viewModel.getPhotoService().fetchPhoto(for: .downloadImage(url: url))
+        }
         return cell
     }
-    
-    
 }
 
+private extension GalleryViewController {
+    
+    enum Constants {
+        static let spacing: CGFloat = 10
+        static let photosPerRow: CGFloat = 3
+        static let prefetchThreshold: Int = 20
+    }
+    
+}
