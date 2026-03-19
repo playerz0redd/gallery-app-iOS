@@ -14,7 +14,7 @@ enum DatabaseError: Error {
     
     var description: String {
         switch self {
-        case .saveError:    "Databse saving error"
+        case .saveError:    "Database saving error"
         case .writeError:   "Database writing error"
         case .fetchError:   "Database fetching error"
         }
