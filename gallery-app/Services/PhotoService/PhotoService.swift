@@ -53,40 +53,41 @@ final class PhotoService {
                     photos[index].isLiked = true
                     photos[index].likes += 1
                 }
-            } catch let error {
-                throw .databaseError(error)
+            } catch {
+                print("Failed to check liked state for photo: \(photos[index].id)")
             }
         }
         return photos
     }
     
     func fetchPhotosPage(for endpoints: [APIEndpoints]) async throws(AppError) {
-        do {
-            try await withThrowingTaskGroup { group in
-                for endpoint in endpoints {
-                    group.addTask {
-                        return try await (endpoint.stringValue, self.fetchPhoto(for: endpoint))
+        await withTaskGroup(of: (String, UIImage)?.self) { group in
+            for endpoint in endpoints {
+                group.addTask {
+                    do {
+                        let image = try await self.fetchPhoto(for: endpoint)
+                        return await (endpoint.url, image)
+                    } catch {
+                        return nil
                     }
                 }
-                
-                for try await (id, photo) in group {
+            }
+            
+            for await result in group {
+                if let (id, photo) = result {
                     cachingManager.cachePhoto(id: id as NSString, image: photo)
                 }
             }
-        } catch let error as AppError {
-            throw error
-        } catch let error {
-            throw .unknownError(error)
         }
     }
     
     func fetchPhoto(for endpoint: APIEndpoints) async throws(AppError) -> UIImage {
-        if let image = cachingManager.getPhoto(by: endpoint.stringValue as NSString) {
+        if let image = cachingManager.getPhoto(by: endpoint.url as NSString) {
             return image
         }
         let imageData = try await dataProvider.fetchData(endpoint: endpoint)
         guard let image = UIImage(data: imageData) else { return UIImage() }
-        cachingManager.cachePhoto(id: endpoint.stringValue as NSString, image: image)
+        cachingManager.cachePhoto(id: endpoint.url as NSString, image: image)
         return image
     }
     
