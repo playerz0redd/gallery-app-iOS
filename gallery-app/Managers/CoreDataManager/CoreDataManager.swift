@@ -51,6 +51,7 @@ final class CoreDataManager: IModelProvider, IDataPersistance {
         photo.regularUrl = model.regularUrl
         photo.thumbUrl =  model.thumbUrl
         photo.username = model.username
+        
         try save()
     }
     
@@ -97,7 +98,7 @@ final class CoreDataManager: IModelProvider, IDataPersistance {
 extension CoreDataManager {
     func toImageModel(photoEntity: PhotoEntity) -> ImageModel {
         ImageModel(
-            id: photoEntity.id!,
+            id: photoEntity.id ?? "",
             width: nil,
             height: nil,
             createdDate: nil,
@@ -105,13 +106,11 @@ extension CoreDataManager {
             altDescription: nil,
             photoUrls: .init(
                 raw: nil,
-                regular: photoEntity.regularUrl!,
-                thumb: photoEntity.thumbUrl!
+                regular: photoEntity.regularUrl ?? "",
+                thumb: photoEntity.thumbUrl ?? ""
             ),
             likes: Int(photoEntity.likes),
             user: .init(username: nil, instagramUsername: photoEntity.username)
         )
     }
-    
-   
 }

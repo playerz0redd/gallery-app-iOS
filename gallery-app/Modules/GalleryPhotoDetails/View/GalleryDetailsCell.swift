@@ -7,51 +7,61 @@
 
 import UIKit
 
-final class GalleryDetailsCell: GalleryCell {
+final class GalleryDetailsCell: UICollectionViewCell {
     
-    override class var reuseId: String {
-        "detailsCell"
-    }
+    static let reuseId: String = "detailsCell"
     
-    private var imageUrl: String?
-    private var isLiked: Bool?
-    
+    private var imageLoadTask: Task<Void, Never>?
     private var onLike: (() -> Void)?
     
-    lazy private var likeButton: UIButton = {
+    private let likeButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.contentHorizontalAlignment = .center
+        button.contentVerticalAlignment = .center
+        button.imageView?.contentMode = .scaleAspectFit
         return button
     }()
     
-    lazy private var usernameLabel: UILabel = {
-        $0.translatesAutoresizingMaskIntoConstraints = false
-        return $0
-    }(UILabel())
+    private let usernameLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
     
-    lazy private var likesLabel: UILabel = {
-        $0.translatesAutoresizingMaskIntoConstraints = false
-        return $0
-    }(UILabel())
+    private let likesLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
     
-    lazy private var descriptionLabel: UILabel = {
-        $0.translatesAutoresizingMaskIntoConstraints = false
-        return $0
-    }(UILabel())
+    private let descriptionLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
     
-    override func setupImageView() -> UIImageView {
+    private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
-    }
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupLayout()
+        likeButton.addTarget(self, action: #selector(likeAction), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
         fatalError()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.image = nil
+        imageLoadTask?.cancel()
     }
     
     private func configureLabel(label: UILabel, text: String?, font: UIFont) {
@@ -60,19 +70,11 @@ final class GalleryDetailsCell: GalleryCell {
         label.font = font
     }
     
-    private func configureButton() {
-        if let isLiked = self.isLiked {
-            likeButton.contentHorizontalAlignment = .center
-            likeButton.contentVerticalAlignment = .center
-            let config = UIImage.SymbolConfiguration(pointSize: 50, weight: .medium, scale: .default)
-            let image = UIImage(systemName: isLiked ? "heart.fill" : "heart", withConfiguration: config)
-            likeButton.contentHorizontalAlignment = .center
-            likeButton.contentVerticalAlignment = .center
-            likeButton.imageView?.contentMode = .scaleAspectFit
-            likeButton.setImage(image, for: .normal)
-            likeButton.tintColor = isLiked ? .red : .black
-            likeButton.addTarget(self, action: #selector(likeAction), for: .touchUpInside)
-        }
+    private func configureButton(isLiked: Bool) {
+        let config = UIImage.SymbolConfiguration(pointSize: 50, weight: .medium, scale: .default)
+        let image = UIImage(systemName: isLiked ? "heart.fill" : "heart", withConfiguration: config)
+        likeButton.setImage(image, for: .normal)
+        likeButton.tintColor = isLiked ? .red : .black
     }
     
     @objc private func likeAction() {
@@ -88,39 +90,43 @@ final class GalleryDetailsCell: GalleryCell {
     }
     
     func configureCell(
-        with imageUrl: String,
         username: String?,
         likeAmount: Int?,
         description: String?,
         isLiked: Bool,
-        photoService: PhotoService,
+        imageTask: @escaping () async -> UIImage?,
         onLike: @escaping () -> Void
     ) {
-        self.imageUrl = imageUrl
-        self.isLiked = isLiked
         self.onLike = onLike
-        configureButton()
+        configureButton(isLiked: isLiked)
         
         configureLabel(
             label: usernameLabel,
             text: "@\(username ?? "No username")",
             font: UIFont.systemFont(ofSize: 16, weight: .bold)
         )
+        
         configureLabel(
             label: descriptionLabel,
             text: description ?? "No description",
             font: UIFont.systemFont(ofSize: 14, weight: .medium)
         )
+        
         configureLabel(
             label: likesLabel,
             text: "\(likeAmount ?? 0)",
             font: UIFont.systemFont(ofSize: 14, weight: .bold)
         )
         
-        super.configureCell(with: imageUrl, photoService: photoService)
+        imageLoadTask = Task { @MainActor in
+            let image = await imageTask()
+            if !Task.isCancelled {
+                self.imageView.image = image
+            }
+        }
     }
     
-    override func setupLayout() {
+    func setupLayout() {
         contentView.addSubview(imageView)
         contentView.addSubview(usernameLabel)
         contentView.addSubview(likesLabel)
@@ -134,25 +140,38 @@ final class GalleryDetailsCell: GalleryCell {
         NSLayoutConstraint.activate([
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -60),
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Constants.topImageOffset),
             imageView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
             
-            usernameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            usernameLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -60),
-            usernameLabel.bottomAnchor.constraint(equalTo: descriptionLabel.topAnchor, constant: -5),
+            usernameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.padding),
+            usernameLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: Constants.labelsTrailingLimit),
+            usernameLabel.bottomAnchor.constraint(equalTo: descriptionLabel.topAnchor, constant: Constants.labelVerticalSpacing),
             
-            likeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            likeButton.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: -25),
-            likeButton.heightAnchor.constraint(equalToConstant: 30),
-            likeButton.widthAnchor.constraint(equalToConstant: 30),
+            likeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Constants.padding),
+            likeButton.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: Constants.bottomImageOffset),
+            likeButton.heightAnchor.constraint(equalToConstant: Constants.iconSize),
+            likeButton.widthAnchor.constraint(equalToConstant: Constants.iconSize),
             
-            likesLabel.topAnchor.constraint(equalTo: likeButton.bottomAnchor, constant: 3),
+            likesLabel.topAnchor.constraint(equalTo: likeButton.bottomAnchor, constant: Constants.iconVerticalSpacing),
             likesLabel.centerXAnchor.constraint(equalTo: likeButton.centerXAnchor),
             
-            descriptionLabel.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor, constant: -25),
+            descriptionLabel.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor, constant: Constants.bottomImageOffset),
             descriptionLabel.leadingAnchor.constraint(equalTo: usernameLabel.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -60),
+            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: Constants.labelsTrailingLimit),
         ])
     }
+}
 
+private extension GalleryDetailsCell {
+    
+    enum Constants {
+        static let topImageOffset: CGFloat = -60
+        static let bottomImageOffset: CGFloat = -25
+        static let iconSize: CGFloat = 30
+        static let padding: CGFloat = 15
+        static let labelsTrailingLimit: CGFloat = -60
+        static let labelVerticalSpacing: CGFloat = -5
+        static let iconVerticalSpacing: CGFloat = 3
+    }
+    
 }

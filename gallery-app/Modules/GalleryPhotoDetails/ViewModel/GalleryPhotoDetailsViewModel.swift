@@ -6,26 +6,77 @@
 //
 
 import Foundation
+import UIKit
 
-final class GalleryPhotoDetailsViewModel: GalleryViewModel {
+final class GalleryPhotoDetailsViewModel {
     
+    private let photoService: PhotoService
+    private var isLoading = false
     private var onLikeButtonPress: (Int, Action) -> Void
     
-    enum Action {
-        case like
-        case dislike
+    var photoModels: [ImageModel]
+    var onDataFetch: (([IndexPath]) -> Void)?
+    var onError: ((String) -> Void)?
+    
+    init(
+        photoService: PhotoService,
+        photoModels: [ImageModel] = [],
+        onLikeButtonPress: @escaping (Int, Action) -> Void
+    ) {
+        self.photoService = photoService
+        self.photoModels = photoModels
+        self.onLikeButtonPress = onLikeButtonPress
     }
     
-    func changeButtonState(at index: Int) {
-        if self.photoModels[index].isLiked == true {
-            self.photoModels[index].likes -= 1
-            deletePhoto(id: self.photoModels[index].id)
-            self.photoModels[index].isLiked = false
-            onLikeButtonPress(index, .dislike)
+    func getPhotoService() -> PhotoService {
+        photoService
+    }
+    
+    func fetchNextPageIfNeeded(currentIndex: Int) {
+        
+        guard !isLoading else { return }
+        
+        let nextPage = currentIndex / APIEndpoints.imagesPerPage + 2
+        isLoading = true
+        
+        Task { @MainActor in
+            do {
+                let startIndex = self.photoModels.endIndex
+                let newPhotos = try await photoService.fetchPhotosModels(page: nextPage)
+                let endIndex = startIndex + newPhotos.count
+                self.photoModels += newPhotos
+                
+                let indexPaths = (startIndex..<endIndex).map { IndexPath(row: $0, section: 0) }
+                self.onDataFetch?(indexPaths)
+            } catch let error as AppError {
+                self.onError?(error.description)
+            }
+            isLoading = false
+        }
+        
+    }
+    
+    func toggleLike(at index: Int) {
+        
+        guard index >= 0 && index < photoModels.count else { return }
+        
+        let isLiked = photoModels[index].isLiked == true
+        
+        if isLiked {
+            dislikePhoto(at: index)
         } else {
-            self.photoModels[index].likes += 1
-            let model = self.photoModels[index]
-            savePhotoModel(
+            likePhoto(at: index)
+        }
+    }
+    
+    private func likePhoto(at index: Int) {
+        
+        photoModels[index].likes += 1
+        photoModels[index].isLiked = true
+        let model = photoModels[index]
+        
+        do {
+            try photoService.savePhotoModel(
                 model: .init(
                     id: model.id,
                     description: model.description,
@@ -35,22 +86,32 @@ final class GalleryPhotoDetailsViewModel: GalleryViewModel {
                     username: model.user.instagramUsername
                 )
             )
-            self.photoModels[index].isLiked = true
             onLikeButtonPress(index, .like)
+        } catch let error {
+            self.onError?(error.description)
         }
+        
     }
     
-    init(
-        photoService: PhotoService,
-        photoModels: [ImageModel] = [],
-        onLikeButtonPress: @escaping (Int, Action) -> Void
-    ) {
-        self.onLikeButtonPress = onLikeButtonPress
-        super.init(photoService: photoService, photoModels: photoModels)
+    private func dislikePhoto(at index: Int) {
+        
+        photoModels[index].likes -= 1
+        photoModels[index].isLiked = false
+        let model = photoModels[index]
+        
+        do {
+            try photoService.deletePhoto(id: model.id)
+            onLikeButtonPress(index, .dislike)
+        } catch let error {
+            self.onError?(error.description)
+        }
+        
     }
-    
-    func getNextPage(photoIndex: Int) -> Int {
-        photoIndex / 30 + 2
+}
+
+extension GalleryPhotoDetailsViewModel {
+    enum Action {
+        case like
+        case dislike
     }
-    
 }

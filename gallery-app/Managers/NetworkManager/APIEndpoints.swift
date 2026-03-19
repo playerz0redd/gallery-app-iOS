@@ -15,14 +15,26 @@ enum APIEndpoints {
         guard let token = Bundle.main.object(forInfoDictionaryKey: "API_TOKEN") as? String else { return "" }
         return token
     }
+    
     static let imagesPerPage = 30
     
-    var stringValue: String {
+    var url: String {
+        
         switch self {
         case .imageInfo(let page):
-            "https://api.unsplash.com/photos/?client_id=\(accessToken)&page=\(page)&per_page=\(Self.imagesPerPage)"
+            var components = URLComponents(string: "https://api.unsplash.com/photos/")
+            
+            components?.queryItems = [
+                URLQueryItem(name: "client_id", value: accessToken),
+                URLQueryItem(name: "page", value: String(page)),
+                URLQueryItem(name: "per_page", value: String(Self.imagesPerPage))
+            ]
+            
+            return components?.url?.absoluteString ?? ""
+            
         case .downloadImage(let url):
-            url
+            return url
         }
     }
+    
 }
