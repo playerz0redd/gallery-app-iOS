@@ -11,13 +11,15 @@ import UIKit
 
 class GalleryViewModel {
     
-    private let photoService: PhotoService
+    let photoService: PhotoService
     var currentPage = 1
     private var isLoading = false
+    var isFavorites = false
     
     var photoModels: [ImageModel]
     var onDataFetch: (([IndexPath]) -> Void)?
     var onError: ((String) -> Void)?
+    
     
     init(photoService: PhotoService, photoModels: [ImageModel] = []) {
         self.photoService = photoService
@@ -30,8 +32,11 @@ class GalleryViewModel {
     }
     
     func fetchPhotoModelPage() {
+        
         guard !isLoading else { return }
+        
         isLoading.toggle()
+        
         Task { @MainActor in
             do {
                 let startIndex = self.photoModels.endIndex
@@ -45,8 +50,10 @@ class GalleryViewModel {
             } catch let error as AppError {
                 self.onError?(error.description)
             }
+            
             isLoading.toggle()
         }
+        
     }
     
     func changePhotoPage(to page: Int) {
@@ -54,10 +61,13 @@ class GalleryViewModel {
     }
     
     func fetchAndCachePhotos(for page: Int, photoQuality: PhotoQuality) {
+        
         let start = (page - 1) * APIEndpoints.imagesPerPage
         let sliceEnd = page * APIEndpoints.imagesPerPage
         let end = sliceEnd > photoModels.count ? photoModels.count : sliceEnd
+        
         guard start <= end else { return }
+        
         let endpoints: [APIEndpoints] = photoModels[start..<end].map { imageModel in
             switch photoQuality {
             case .raw:
@@ -68,6 +78,7 @@ class GalleryViewModel {
                 .downloadImage(url: imageModel.photoUrls.thumb)
             }
         }
+        
         Task {
             do {
                 try await photoService.fetchPhotosPage(for: endpoints)
@@ -75,6 +86,7 @@ class GalleryViewModel {
                 self.onError?(error.description)
             }
         }
+        
     }
     
     func deletePhoto(id: String) {
@@ -83,6 +95,13 @@ class GalleryViewModel {
         } catch let error {
             self.onError?(error.description)
         }
+    }
+    
+    func updatePhotoLikeState(at index: Int, isLiked: Bool) {
+        guard index >= 0 && index < photoModels.count else { return }
+        
+        photoModels[index].isLiked = isLiked
+        photoModels[index].likes += isLiked ? 1 : -1
     }
     
     func savePhotoModel(model: DatabasePhotoModel) {
