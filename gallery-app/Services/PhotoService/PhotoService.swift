@@ -53,14 +53,15 @@ final class PhotoService {
                     photos[index].isLiked = true
                     photos[index].likes += 1
                 }
-            } catch {
+            } catch let error {
                 print("Failed to check liked state for photo: \(photos[index].id)")
+                throw .databaseError(error)
             }
         }
         return photos
     }
     
-    func fetchPhotosPage(for endpoints: [APIEndpoints]) async throws(AppError) {
+    func fetchPhotosPage(for endpoints: [APIEndpoints]) async {
         await withTaskGroup(of: (String, UIImage)?.self) { group in
             for endpoint in endpoints {
                 group.addTask {
@@ -86,7 +87,9 @@ final class PhotoService {
             return image
         }
         let imageData = try await dataProvider.fetchData(endpoint: endpoint)
-        guard let image = UIImage(data: imageData) else { return UIImage() }
+        
+        guard let image = UIImage(data: imageData) else { throw .unknownError(NSError()) }
+        
         cachingManager.cachePhoto(id: endpoint.url as NSString, image: image)
         return image
     }
