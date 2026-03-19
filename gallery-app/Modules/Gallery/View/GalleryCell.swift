@@ -7,15 +7,11 @@
 
 import UIKit
 
-
 class GalleryCell: UICollectionViewCell {
     
-    class var reuseId: String {
-        "galleryCell"
-    }
+    class var reuseId: String { "galleryCell" }
     
-    private var photoService: PhotoService?
-    private var imageUrl: String = ""
+    private var imageLoadTask: Task<Void, Never>?
     
     private let imageView: UIImageView = {
         let image = UIImageView()
@@ -26,9 +22,7 @@ class GalleryCell: UICollectionViewCell {
         return image
     }()
     
-    required init?(coder: NSCoder) {
-        fatalError()
-    }
+    required init?(coder: NSCoder) { fatalError() }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -38,19 +32,16 @@ class GalleryCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         self.imageView.image = nil
+        imageLoadTask?.cancel()
     }
     
-    func configureCell(with url: String, photoService: PhotoService) {
-        self.imageUrl = url
-        self.photoService = photoService
-        Task { @MainActor in
-            let image = try await photoService.fetchPhoto(for: .downloadImage(url: url))
-            
-            if imageUrl == self.imageUrl {
+    func configureCell(imageTask: @escaping () async -> UIImage?) {
+        imageLoadTask = Task { @MainActor in
+            let image = await imageTask()
+            if !Task.isCancelled {
                 self.imageView.image = image
             }
         }
-    
     }
     
     private func setupLayout() {
@@ -65,5 +56,4 @@ class GalleryCell: UICollectionViewCell {
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
     }
-    
 }
