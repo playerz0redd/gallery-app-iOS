@@ -10,6 +10,7 @@ import UIKit
 final class GalleryPhotoDetailsViewController: UIViewController {
     
     private let viewModel: GalleryPhotoDetailsViewModel
+    private let paginationOffset = 5
     private var currentImageIndex: Int
     private var isFirstLayout = true
     
@@ -107,7 +108,7 @@ extension GalleryPhotoDetailsViewController {
         willDisplay cell: UICollectionViewCell,
         forItemAt indexPath: IndexPath
     ) {
-        if indexPath.item == viewModel.photoModels.count - 5 {
+        if indexPath.item == viewModel.photoModels.count - paginationOffset {
             viewModel.fetchNextPageIfNeeded(currentIndex: indexPath.item)
         }
     }
